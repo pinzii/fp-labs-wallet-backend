@@ -24,7 +24,7 @@ public class WalletService {
     @Transactional // Garantiza atomicidad: si algo falla, se hace ROLLBACK automático
     public void transfer(UUID fromAccountId, UUID toAccountId, BigDecimal amount, String idempotencyKey) {
 
-        // 👇👇 ELIMINA EL ERROR INICIAL TEMPORALMENTE PARA VER QUÉ HAY EN LA BD 👇👇
+        // ELIMINA EL ERROR INICIAL TEMPORALMENTE PARA VER QUÉ HAY EN LA BD
         long totalCuentas = accountRepository.count();
         System.out.println("🚨🚨 TOTAL DE CUENTAS EN LA BD: " + totalCuentas);
 
@@ -93,5 +93,18 @@ public class WalletService {
 
         ledgerRepository.save(debitEntry);
         ledgerRepository.save(creditEntry);
+    }
+
+    @Transactional(readOnly = true) // Optimiza la consulta al indicar que no habrá modificaciones
+    public BigDecimal getBalance(UUID accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada: " + accountId));
+
+        return account.getBalance();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<TransactionLedger> getTransactionHistory(UUID accountId) {
+        return ledgerRepository.findByAccountId(accountId);
     }
 }

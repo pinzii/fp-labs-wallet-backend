@@ -5,7 +5,9 @@ import com.fplabs.wallet.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/wallets")
@@ -36,5 +38,27 @@ public class WalletController {
         return ResponseEntity.ok(Map.of(
                 "status", "SUCCESS",
                 "message", "Transferencia procesada exitosamente"));
+    }
+
+    @GetMapping("/{accountId}/balance")
+    public ResponseEntity<?> getAccountBalance(@PathVariable UUID accountId) {
+
+        BigDecimal balance = walletService.getBalance(accountId);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "accountId", accountId,
+                "balance", balance));
+    }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<?> getTransactionHistory(@PathVariable UUID accountId) {
+
+        java.util.List<?> transactions = walletService.getTransactionHistory(accountId);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "accountId", accountId,
+                "transactions", transactions));
     }
 }
