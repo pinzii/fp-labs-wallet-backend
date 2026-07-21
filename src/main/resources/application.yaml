@@ -2,15 +2,19 @@ spring:
   application:
     name: fp-labs-wallet
   datasource:
-    url: jdbc:postgresql://localhost:5432/wallet_db
-    username: root
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
     password: rootpassword
     driver-class-name: org.postgresql.Driver
   jpa:
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
     # Apagamos la creación automática de tablas (ddl-auto) porque
     # nuestra arquitectura dicta que la base de datos la creamos nosotros a mano.
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

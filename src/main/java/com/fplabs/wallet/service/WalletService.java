@@ -24,6 +24,13 @@ public class WalletService {
     @Transactional // Garantiza atomicidad: si algo falla, se hace ROLLBACK automático
     public void transfer(UUID fromAccountId, UUID toAccountId, BigDecimal amount, String idempotencyKey) {
 
+        // 👇👇 ELIMINA EL ERROR INICIAL TEMPORALMENTE PARA VER QUÉ HAY EN LA BD 👇👇
+        long totalCuentas = accountRepository.count();
+        System.out.println("🚨🚨 TOTAL DE CUENTAS EN LA BD: " + totalCuentas);
+
+        accountRepository.findAll().forEach(
+                acc -> System.out.println("💳 Cuenta -> ID: " + acc.getId() + " | Saldo: " + acc.getBalance()));
+
         // 1. Validación básica de negocio
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto a transferir debe ser mayor a cero");
@@ -35,6 +42,12 @@ public class WalletService {
         // 2. Prevención de Deadlocks: Ordenamiento de bloqueos por ID
         UUID firstLockId = fromAccountId.compareTo(toAccountId) < 0 ? fromAccountId : toAccountId;
         UUID secondLockId = firstLockId.equals(fromAccountId) ? toAccountId : fromAccountId;
+
+        System.out.println("====== DEBUGGING TRANSFERENCIA ======");
+        System.out.println("From ID recibido: " + fromAccountId);
+        System.out.println("To ID recibido: " + toAccountId);
+        System.out.println("First Lock ID calculado: " + firstLockId);
+        System.out.println("======================================");
 
         // Adquirimos los bloqueos pesimistas en el orden estricto (PostgreSQL encola
         // aquí los hilos)
